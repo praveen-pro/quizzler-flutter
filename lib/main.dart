@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+import 'quiz_brain.dart';
 
 void main() => runApp(Quizzler());
+
+QuizBrain quizBrain = QuizBrain();
 
 class Quizzler extends StatelessWidget {
   @override
@@ -27,15 +32,7 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   List<Icon> scoreKeeper = [];
 
-  List<String> questions = [
-    'You can lead a cow downstairs but not upstairs',
-    'Approximately one quarter of human bones are in the feet',
-    'A slug\'s blood is green'
-  ];
-
   int questionNumber = 0;
-
-  List<bool> answers = [false, true, true];
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +46,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                questions[questionNumber],
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -107,11 +104,21 @@ class _QuizPageState extends State<QuizPage> {
 
   void nextQuestion(bool selectedAnswer) {
     setState(() {
-      if (selectedAnswer == answers[questionNumber])
-        scoreKeeper.add(correctAnswer());
-      else
-        scoreKeeper.add(wrongAnswer());
-      if (questionNumber < questions.length - 1) questionNumber++;
+      if (quizBrain.isFinished()) {
+        Alert(
+          context: context,
+          title: "Finished!",
+          desc: "You have reached end of the quiz.",
+        ).show();
+        quizBrain.reset();
+        scoreKeeper.clear();
+      } else {
+        if (selectedAnswer == quizBrain.getCorrectAnswer())
+          scoreKeeper.add(correctAnswer());
+        else
+          scoreKeeper.add(wrongAnswer());
+        quizBrain.nextQuestion();
+      }
     });
   }
 
@@ -129,9 +136,3 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 }
-
-/*
-question1: 'You can lead a cow down stairs but not up stairs.', false,
-question2: 'Approximately one quarter of human bones are in the feet.', true,
-question3: 'A slug\'s blood is green.', true,
-*/
